@@ -7,6 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .movie-poster {
+            aspect-ratio: 2/3;
+            transition: all 0.3s ease;
+        }
+        .movie-poster:hover {
+            transform: scale(1.05);
+        }
+        .rating-badge {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 <body class="bg-[#121212] text-white">
@@ -14,6 +25,7 @@
     <section class="min-h-screen px-6 py-10">
         <div class="max-w-7xl mx-auto">
 
+            <!-- Barra de pesquisa -->
             <div class="mb-8 flex gap-4">
                 <input id="searchInput" type="text" placeholder="Buscar filmes..."
                     class="w-full px-4 py-2 rounded-lg bg-[#1E1E1E] border border-[#333] text-[#E0E0E0] focus:outline-none focus:border-[#0466C8]">
@@ -22,8 +34,13 @@
                 </button>
             </div>
 
+            <!-- Contador -->
             <div id="resultCount" class="mb-6 text-[#E0E0E0] text-lg hidden"></div>
 
+            <!-- Grid de posters -->
+            <div id="resultsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+
+            <!-- Estado vazio -->
             <p id="emptyState" class="text-[#9E9E9E] text-center mt-12 hidden">Nenhum filme encontrado.</p>
 
         </div>
@@ -32,9 +49,11 @@
     <script>
         const API_KEY = 'cf6ec6ffbab96b9197ffb9188ffaa4c2';
         const BASE_URL = 'https://api.themoviedb.org/3';
+        const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 
         let currentQuery = '';
 
+        const resultsGrid = document.getElementById('resultsGrid');
         const resultCount = document.getElementById('resultCount');
         const emptyState = document.getElementById('emptyState');
         const searchInput = document.getElementById('searchInput');
@@ -43,6 +62,9 @@
             currentQuery = searchInput.value.trim();
             if (currentQuery) {
                 try {
+                    resultsGrid.innerHTML = '<div class="col-span-full text-center py-10">Carregando...</div>';
+                    emptyState.classList.add('hidden');
+                    
                     const response = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(currentQuery)}`, {
                         headers: {
                             'Authorization': `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZjZlYzZmZmJhYjk2YjkxOTdmZmI5MTg4ZmZhYTRjMiIsInN1YiI6IjY3ZGJmNTE5OGFmNDUyZjMwZmU5ZWE4ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.DUasVrC69RZ4oIh62yHIGkzLU7uti7oTYKLxn2M8WCM`,
@@ -50,11 +72,10 @@
                         }
                     });
                     
-                    if (!response.ok) {
-                        throw new Error('Erro na requisição');
-                    }
+                    if (!response.ok) throw new Error('Erro na requisição');
 
                     const data = await response.json();
+                    resultsGrid.innerHTML = '';
 
                     if (data.results.length === 0) {
                         emptyState.classList.remove('hidden');
@@ -62,21 +83,44 @@
                     } else {
                         emptyState.classList.add('hidden');
                         resultCount.classList.remove('hidden');
-                        resultCount.textContent = `${data.total_results} resultados encontrados`;
+                        resultCount.textContent = `${data.total_results} filmes encontrados`;
+
+                        data.results.forEach(movie => {
+                            const poster = movie.poster_path ? `${IMG_URL}${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=Poster+Indisponível';
+                            const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+
+                            const posterElement = document.createElement('div');
+                            posterElement.className = 'movie-poster relative rounded-xl overflow-hidden shadow-lg';
+                            posterElement.innerHTML = `
+                                <img src="${poster}" alt="${movie.title}" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4">
+                                    <h3 class="text-white font-bold truncate">${movie.title}</h3>
+                                    <div class="rating-badge absolute top-3 right-3 rounded-full w-10 h-10 flex items-center justify-center border-2 ${getRatingColor(movie.vote_average)}">
+                                        ${rating}
+                                    </div>
+                                </div>
+                            `;
+                            resultsGrid.appendChild(posterElement);
+                        });
                     }
                 } catch (error) {
-                    console.error('Erro ao buscar filmes:', error);
+                    console.error('Erro:', error);
+                    resultsGrid.innerHTML = '';
                     emptyState.classList.remove('hidden');
-                    emptyState.textContent = 'Erro ao carregar filmes. Verifique sua conexão ou tente novamente mais tarde.';
-                    resultCount.classList.add('hidden');
+                    emptyState.textContent = 'Erro ao buscar filmes. Tente novamente.';
                 }
             }
         }
 
+        function getRatingColor(rating) {
+            if (!rating) return 'border-gray-500 text-gray-300';
+            if (rating >= 8) return 'border-green-500 text-green-400';
+            if (rating >= 6) return 'border-yellow-500 text-yellow-400';
+            return 'border-red-500 text-red-400';
+        }
+
         searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchMovies();
-            }
+            if (e.key === 'Enter') searchMovies();
         });
     </script>
 
