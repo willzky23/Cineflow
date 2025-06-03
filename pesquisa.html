@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Buscador de Filmes</title>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#121212',
+            container: '#1E1E1E',
+            primary: '#0466C8',
+            'text-primary': '#E0E0E0',
+            'text-secondary': '#9E9E9E',
+          },
+          fontFamily: {
+            poppins: ['Poppins', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #121212;
+      color: #E0E0E0;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-background font-poppins text-text-primary">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-semibold text-text-primary mb-2">
+        Buscador de Filmes
+      </h1>
+      <p class="text-text-secondary">
+        Encontre informações sobre seus filmes favoritos
+      </p>
+    </header>
+
+    <div class="w-full bg-background p-4 rounded-lg">
+      <div class="max-w-6xl mx-auto">
+        <div class="mb-4">
+          <div class="relative w-full">
+            <div class="relative">
+              <input
+                type="text"
+                id="searchInput"
+                class="bg-[#1E1E1E] border border-[#9E9E9E] text-[#E0E0E0] placeholder:text-[#9E9E9E] rounded-md px-4 py-2 w-full outline-none focus:border-[#0466C8] transition-colors pl-10"
+                placeholder="Buscar filmes..."
+              />
+              <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9E9E9E]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </div>
+              <div id="loadingIndicator" class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
+                <div class="w-4 h-4 border-2 border-[#0466C8] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </div>
+            <div id="suggestions" class="bg-[#1E1E1E] border border-[#9E9E9E] rounded-md text-[#E0E0E0] w-full absolute z-20 mt-1 hidden"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div class="relative">
+            <div id="genreDropdown" class="bg-[#1E1E1E] border border-[#9E9E9E] rounded-md text-[#E0E0E0] w-full flex items-center justify-between cursor-pointer px-4 py-2">
+              <span class="text-[#9E9E9E]">Gênero</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2 transition-transform">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div id="genreOptions" class="bg-[#1E1E1E] border border-[#9E9E9E] rounded-md text-[#E0E0E0] w-full absolute z-10 mt-1 max-h-60 overflow-auto hidden"></div>
+          </div>
+
+          <div class="relative">
+            <div id="yearDropdown" class="bg-[#1E1E1E] border border-[#9E9E9E] rounded-md text-[#E0E0E0] w-full flex items-center justify-between cursor-pointer px-4 py-2">
+              <span class="text-[#9E9E9E]">Ano</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2 transition-transform">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div id="yearOptions" class="bg-[#1E1E1E] border border-[#9E9E9E] rounded-md text-[#E0E0E0] w-full absolute z-10 mt-1 max-h-60 overflow-auto hidden"></div>
+          </div>
+
+          <div class="relative">
+            <div id="ratingDropdown" class="bg-[#1E1E1E] border border-[#9E9E9E] rounded-md text-[#E0E0E0] w-full flex items-center justify-between cursor-pointer px-4 py-2">
+              <span class="text-[#9E9E9E]">Classificação</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2 transition-transform">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div id="ratingOptions" class="bg-[#1E1E1E] border border-[#9E9E9E] rounded-md text-[#E0E0E0] w-full absolute z-10 mt-1 max-h-60 overflow-auto hidden"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button id="searchButton" class="bg-[#0466C8] text-[#E0E0E0] rounded-md px-4 py-2 font-medium transition-colors hover:bg-[#0353a4] disabled:opacity-50 disabled:cursor-not-allowed flex-1" disabled>
+            Buscar
+          </button>
+          <button id="clearButton" class="bg-transparent border border-[#9E9E9E] text-[#9E9E9E] rounded-md px-4 py-2 font-medium transition-colors hover:text-[#E0E0E0] hover:border-[#E0E0E0] flex-1">
+            Limpar Filtros
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="searchResults" class="mt-8 p-4 bg-container rounded-lg hidden">
+      <h2 class="text-xl font-medium mb-4">Parâmetros de Busca:</h2>
+      <pre id="resultsContent" class="bg-background p-4 rounded text-sm overflow-auto"></pre>
+    </div>
+  </div>
+
+  <script>
+        const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+    const BEARER_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZjZlYzZmZmJhYjk2YjkxOTdmZmI5MTg4ZmZhYTRjMiIsIm5iZiI6MTc0MjQ2ODM3Ny40NzMsInN1YiI6IjY3ZGJmNTE5OGFmNDUyZjMwZmU5ZWE4ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.DUasVrC69RZ4oIh62yHIGkzLU7uti7oTYKLxn2M8WCM';
+
+    const headers = {
+      'Authorization': `Bearer ${BEARER_TOKEN}`,
+      'Content-Type': 'application/json'
+    };
+
+    let filters = {
+      query: '',
+      genre: '',
+      year: '',
+      rating: ''
+    };
+
+    // DOM Elements
+    const searchInput = document.getElementById('searchInput');
+    const suggestions = document.getElementById('suggestions');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const searchButton = document.getElementById('searchButton');
+    const clearButton = document.getElementById('clearButton');
+    const searchResults = document.getElementById('searchResults');
+    const resultsContent = document.getElementById('resultsContent');
+
+    // Dropdowns
+    const dropdowns = ['genre', 'year', 'rating'].map(type => ({
+      button: document.getElementById(`${type}Dropdown`),
+      options: document.getElementById(`${type}Options`),
+      type
+    }));
+
+    // Initialize dropdowns
+    async function initializeDropdowns() {
+      // Fetch genres
+      const genres = await fetchGenres();
+      const genreOptions = [
+        { value: 'all', label: 'Todos' },
+        ...genres.map(genre => ({ value: genre.id.toString(), label: genre.name }))
+      ];
+
+      // Generate years
+      const years = Array.from({ length: 25 }, (_, i) => {
+        const year = 2024 - i;
+        return { value: year.toString(), label: year.toString() };
+      });
+      const yearOptions = [{ value: 'all', label: 'Todos' }, ...years];
+
+      // Rating options
+      const ratingOptions = [
+        { value: 'all', label: 'Todos' },
+        { value: '9', label: '9+' },
+        { value: '8', label: '8+' },
+        { value: '7', label: '7+' },
+        { value: '6', label: '6+' },
+        { value: '5', label: '5+' }
+      ];
+
+      // Set up dropdowns
+      const options = {
+        genre: genreOptions,
+        year: yearOptions,
+        rating: ratingOptions
+      };
+
+      dropdowns.forEach(({ button, options: optionsElement, type }) => {
+        const optionsList = options[type];
+        
+        optionsElement.innerHTML = optionsList
+          .map(option => `
+            <div class="dropdown-option" data-value="${option.value}">
+              ${option.label}
+            </div>
+          `).join('');
+
+        // Toggle dropdown
+        button.addEventListener('click', () => {
+          optionsElement.classList.toggle('hidden');
+          button.querySelector('svg').classList.toggle('rotate-180');
+        });
+
+        // Handle option selection
+        optionsElement.addEventListener('click', (e) => {
+          const option = e.target.closest('.dropdown-option');
+          if (option) {
+            const value = option.dataset.value;
+            filters[type] = value;
+            button.querySelector('span').textContent = option.textContent;
+            button.querySelector('span').classList.remove('text-[#9E9E9E]');
+            button.querySelector('span').classList.add('text-[#E0E0E0]');
+            optionsElement.classList.add('hidden');
+            button.querySelector('svg').classList.remove('rotate-180');
+            updateSearchButtonState();
+          }
+        });
+      });
+
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', (e) => {
+        dropdowns.forEach(({ button, options }) => {
+          if (!button.contains(e.target) && !options.contains(e.target)) {
+            options.classList.add('hidden');
+            button.querySelector('svg').classList.remove('rotate-180');
+          }
+        });
+      });
+    }
+
+    // API Functions
+    async function fetchGenres() {
+      try {
+        const response = await fetch(
+          `${BASE_URL}/genre/movie/list?language=pt-BR`,
+          { headers }
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to fetch genres: ${errorData.status_message || response.statusText}`);
+        }
+        
+        const data = await response.json();
+        return data.genres;
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+        return [];
+      }
+    }
+
+    async function getMovieSuggestions(query) {
+      if (!query.trim()) {
+        return [];
+      }
+
+      try {
+        const response = await fetch(
+          `${BASE_URL}/search/movie?language=pt-BR&query=${encodeURIComponent(query)}&include_adult=false&page=1`,
+          { headers }
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to fetch suggestions: ${errorData.status_message || response.statusText}`);
+        }
+        
+        const data = await response.json();
+        return data.results
+          .slice(0, 5)
+          .map(movie => movie.title);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        return [];
+      }
+    }
+
+    // Event Handlers
+    let debounceTimer;
+    searchInput.addEventListener('input', (e) => {
+      filters.query = e.target.value;
+      updateSearchButtonState();
+
+      clearTimeout(debounceTimer);
+      if (e.target.value.length >= 3) {
+        loadingIndicator.classList.remove('hidden');
+        debounceTimer = setTimeout(async () => {
+          const results = await getMovieSuggestions(e.target.value);
+          suggestions.innerHTML = results
+            .map(title => `<div class="dropdown-option">${title}</div>`)
+            .join('');
+          suggestions.classList.toggle('hidden', results.length === 0);
+          loadingIndicator.classList.add('hidden');
+        }, 300);
+      } else {
+        suggestions.classList.add('hidden');
+        loadingIndicator.classList.add('hidden');
+      }
+    });
+
+    suggestions.addEventListener('click', (e) => {
+      const option = e.target.closest('.dropdown-option');
+      if (option) {
+        searchInput.value = option.textContent;
+        filters.query = option.textContent;
+        suggestions.classList.add('hidden');
+        updateSearchButtonState();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !suggestions.contains(e.target)) {
+        suggestions.classList.add('hidden');
+      }
+    });
+
+    searchButton.addEventListener('click', () => {
+      if (filters.query.trim()) {
+        searchResults.classList.remove('hidden');
+        resultsContent.textContent = JSON.stringify(filters, null, 2);
+      }
+    });
+
+    clearButton.addEventListener('click', () => {
+      filters = {
+        query: '',
+        genre: '',
+        year: '',
+        rating: ''
+      };
+      
+      searchInput.value = '';
+      suggestions.classList.add('hidden');
+      searchResults.classList.add('hidden');
+      
+      dropdowns.forEach(({ button }) => {
+        const span = button.querySelector('span');
+        span.textContent = span.textContent.split(':')[0];
+        span.classList.remove('text-[#E0E0E0]');
+        span.classList.add('text-[#9E9E9E]');
+      });
+      
+      updateSearchButtonState();
+    });
+
+    function updateSearchButtonState() {
+      searchButton.disabled = !filters.query.trim();
+    }
+
+    // Initialize
+    initializeDropdowns();
+  </script>
+</body>
+</html>
