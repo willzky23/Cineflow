@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalhes do Filme</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#121212] text-[#E0E0E0] font-sans min-h-screen">
+
+<a href="#" onclick="history.back(); return false;" class="ml-4 mt-4 inline-block text-[#0466C8] hover:underline">← Voltar</a>
+
+
+  <!-- Container principal -->
+  <div class="container mx-auto px-4 py-10">
+    <p id="loading" class="text-[#9E9E9E] text-center mb-6">Carregando...</p>
+
+    <div class="flex flex-col md:flex-row gap-8 hidden" id="details">
+      <img id="poster" class="w-full md:w-64 md:h-[384px] object-cover rounded-xl shadow-lg" />
+      <div class="flex-1">
+        <h1 id="title" class="text-3xl font-bold mb-4"></h1>
+        <p id="info" class="text-sm text-[#9E9E9E] mb-2"></p>
+        <p id="genres" class="text-sm text-[#9E9E9E] mb-4"></p>
+        <p id="overview" class="text-[#E0E0E0] text-lg mb-6"></p>
+        <div id="trailerContainer" class="aspect-video w-full hidden">
+          <iframe id="trailer" class="w-[950px] h-[500px] rounded-lg shadow-lg" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = 'cf6ec6ffbab96b9197ffb9188ffaa4c2';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMG_URL = 'https://image.tmdb.org/t/p';
+
+    const movieId = new URLSearchParams(window.location.search).get('id');
+    const loadingEl = document.getElementById('loading');
+    const detailsEl = document.getElementById('details');
+    const trailerContainer = document.getElementById('trailerContainer');
+    const trailerEl = document.getElementById('trailer');
+
+    async function fetchMovieDetails(id) {
+      try {
+        const [detailsRes, videosRes] = await Promise.all([
+          fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&language=pt-BR`),
+          fetch(`${BASE_URL}/movie/${id}/videos?api_key=${API_KEY}&language=pt-BR`)
+        ]);
+
+        if (!detailsRes.ok || !videosRes.ok) throw new Error('Erro na API');
+
+        const movie = await detailsRes.json();
+        const videoData = await videosRes.json();
+
+        // Preencher dados do filme
+        document.getElementById('title').textContent = movie.title;
+        document.getElementById('overview').textContent = movie.overview;
+        document.getElementById('poster').src = `${IMG_URL}/w500${movie.poster_path}`;
+        document.getElementById('info').textContent =
+          `Lançado em ${new Date(movie.release_date).toLocaleDateString('pt-BR')} • Nota: ${movie.vote_average.toFixed(1)}`;
+        document.getElementById('genres').textContent =
+          `Gêneros: ${movie.genres.map(g => g.name).join(', ')}`;
+
+        // Encontrar trailer (YouTube)
+        const trailer = videoData.results.find(video => 
+          video.type === 'Trailer' && video.site === 'YouTube'
+        );
+
+        if (trailer) {
+          trailerEl.src = `https://www.youtube.com/embed/${trailer.key}`;
+          trailerContainer.classList.remove('hidden');
+        }
+
+        // Exibir conteúdo e ocultar "Carregando..."
+        loadingEl.style.display = 'none';
+        detailsEl.classList.remove('hidden');
+
+      } catch (error) {
+        loadingEl.textContent = 'Erro ao carregar detalhes do filme.';
+        console.error(error);
+      }
+    }
+
+    if (movieId) {
+      fetchMovieDetails(movieId);
+    } else {
+      loadingEl.textContent = 'Filme não encontrado.';
+    }
+  </script>
+
+</body>
+</html>
