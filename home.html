@@ -127,12 +127,16 @@
                         <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-[#E0E0E0] mb-4">${movie.title}</h1>
                         <p class="text-lg text-[#9E9E9E] mb-8 line-clamp-3">${movie.overview}</p>
                         <div class="flex space-x-4">
+                            <a href="https://www.youtube.com/watch?v=oLnS1Ij9-Kk">
                             <button class="bg-[#0466C8] hover:bg-[#0466C8]/90 text-[#E0E0E0] font-medium px-6 py-3 rounded-lg transition-colors flex items-center">
                                 Assistir Trailer
                             </button>
+                            </a>
+                            <a href="populares.html">
                             <button class="bg-[#1E1E1E]/80 hover:bg-[#1E1E1E] text-[#E0E0E0] font-medium px-6 py-3 rounded-lg transition-colors">
                                 Ver mais
                             </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -140,34 +144,37 @@
         }
 
         function updateMovieCarousel(movies) {
-            const movieCarousel = document.getElementById('movieCarousel');
-            movieCarousel.innerHTML = movies.map(movie => `
-                <div class="swiper-slide" style="width: 250px;">
-                    <div class="bg-[#1E1E1E] rounded-lg overflow-hidden shadow-lg">
-                        <div class="aspect-[2/3] relative">
-                            <img 
-                                src="${IMG_URL}/w500${movie.poster_path}"
-                                alt="${movie.title}"
-                                class="w-full h-full object-cover"
-                                loading="lazy"
-                            />
-                            <div class="absolute inset-0 bg-gradient-to-t from-[#1E1E1E] to-transparent opacity-0 hover:opacity-100 transition-opacity"></div>
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-[#E0E0E0] font-semibold text-lg line-clamp-2 mb-2">${movie.title}</h3>
-                            <div class="flex items-center text-[#9E9E9E] text-sm">
-                                <span>${new Date(movie.release_date).getFullYear()}</span>
-                                <span class="mx-2">•</span>
-                                <div class="flex items-center">
-                                    <span class="text-[#0466C8]">★</span>
-                                    <span class="ml-1">${movie.vote_average.toFixed(1)}</span>
-                                </div>
+    const movieCarousel = document.getElementById('movieCarousel');
+    movieCarousel.innerHTML = movies.map(movie => `
+        <div class="swiper-slide" style="width: 250px;">
+            <a href="filmeindividual.html?id=${movie.id}" class="block">
+                <div class="bg-[#1E1E1E] rounded-lg overflow-hidden shadow-lg hover:ring-2 ring-[#0466C8] transition">
+                    <div class="aspect-[2/3] relative">
+                        <img 
+                            src="${IMG_URL}/w500${movie.poster_path}"
+                            alt="${movie.title}"
+                            class="w-full h-full object-cover"
+                            loading="lazy"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#1E1E1E] to-transparent opacity-0 hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-[#E0E0E0] font-semibold text-lg line-clamp-2 mb-2">${movie.title}</h3>
+                        <div class="flex items-center text-[#9E9E9E] text-sm">
+                            <span>${new Date(movie.release_date).getFullYear()}</span>
+                            <span class="mx-2">•</span>
+                            <div class="flex items-center">
+                                <span class="text-[#0466C8]">★</span>
+                                <span class="ml-1">${movie.vote_average.toFixed(1)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
-            `).join('');
-        }
+            </a>
+        </div>
+    `).join('');
+}
+
 
         function initializeSwiper() {
             if (swiper) {
