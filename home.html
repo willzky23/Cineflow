@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cineflow | Sua plataforma de streaming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif;
+            background-color: #121212;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .swiper {
+            width: 100%;
+            padding: 20px 0;
+        }
+        .swiper-slide {
+            width: auto;
+            transition: transform 0.3s;
+        }
+        .swiper-slide:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="text-[#E0E0E0]">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-[#1E1E1E]/90 backdrop-blur-sm">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center" id="homeLink">
+                    <span class="text-[#E0E0E0] font-bold text-2xl">Cine<span class="text-[#0466C8]">flow</span></span>
+                </a>
+                
+                <nav class="hidden md:block">
+                    <ul class="flex space-x-8">
+                        <li><a href="/" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Início</a></li>
+                        <li><a href="#filmes" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Filmes</a></li>
+                        <li><a href="search.html" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Busca</a></li>
+                        <li><a href="#lancamentos" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Lançamentos</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <div id="heroBanner" class="relative w-full h-[80vh] -mt-20"></div>
+
+    <!-- Popular Movies Carousel -->
+    <div class="container mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold text-[#E0E0E0] mb-8">Filmes Populares</h2>
+        <div class="swiper popularMovies">
+            <div class="swiper-wrapper" id="movieCarousel"></div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#1E1E1E] py-8">
+        <div class="container mx-auto px-4 text-center text-[#9E9E9E]">
+            <p>© 2024 Cineflow. Todos os direitos reservados.</p>
+            <p class="mt-2 text-sm">Dados fornecidos pela API do The Movie Database (TMDB).</p>
+        </div>
+    </footer>
+
+    <script>
+        const API_KEY = 'cf6ec6ffbab96b9197ffb9188ffaa4c2';
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        const IMG_URL = 'https://image.tmdb.org/t/p';
+
+        let swiper;
+
+        async function fetchPopularMovies() {
+            try {
+                const response = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR`);
+                const data = await response.json();
+                
+                // Update hero banner
+                const featuredMovie = data.results[0];
+                updateHeroBanner(featuredMovie);
+                
+                // Update movie carousel
+                updateMovieCarousel(data.results);
+                
+                // Initialize Swiper
+                initializeSwiper();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function updateHeroBanner(movie) {
+            const heroBanner = document.getElementById('heroBanner');
+            heroBanner.innerHTML = `
+                <div class="absolute inset-0 bg-cover bg-center" 
+                     style="background-image: url('${IMG_URL}/original${movie.backdrop_path}')">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#121212]/90 via-[#121212]/60 to-transparent"></div>
+                </div>
+                <div class="container mx-auto px-4 h-full flex flex-col justify-center relative z-10">
+                    <div class="max-w-2xl mt-20">
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-[#E0E0E0] mb-4">${movie.title}</h1>
+                        <p class="text-lg text-[#9E9E9E] mb-8 line-clamp-3">${movie.overview}</p>
+                        <div class="flex space-x-4">
+                            <button class="bg-[#0466C8] hover:bg-[#0466C8]/90 text-[#E0E0E0] font-medium px-6 py-3 rounded-lg transition-colors flex items-center">
+                                Assistir Trailer
+                            </button>
+                            <button class="bg-[#1E1E1E]/80 hover:bg-[#1E1E1E] text-[#E0E0E0] font-medium px-6 py-3 rounded-lg transition-colors">
+                                Ver mais
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateMovieCarousel(movies) {
+            const movieCarousel = document.getElementById('movieCarousel');
+            movieCarousel.innerHTML = movies.map(movie => `
+                <div class="swiper-slide" style="width: 250px;">
+                    <div class="bg-[#1E1E1E] rounded-lg overflow-hidden shadow-lg">
+                        <div class="aspect-[2/3] relative">
+                            <img 
+                                src="${IMG_URL}/w500${movie.poster_path}"
+                                alt="${movie.title}"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#1E1E1E] to-transparent opacity-0 hover:opacity-100 transition-opacity"></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-[#E0E0E0] font-semibold text-lg line-clamp-2 mb-2">${movie.title}</h3>
+                            <div class="flex items-center text-[#9E9E9E] text-sm">
+                                <span>${new Date(movie.release_date).getFullYear()}</span>
+                                <span class="mx-2">•</span>
+                                <div class="flex items-center">
+                                    <span class="text-[#0466C8]">★</span>
+                                    <span class="ml-1">${movie.vote_average.toFixed(1)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initializeSwiper() {
+            if (swiper) {
+                swiper.destroy();
+            }
+            
+            swiper = new Swiper('.popularMovies', {
+                slidesPerView: 'auto',
+                spaceBetween: 20,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                breakpoints: {
+                    320: {
+                        slidesPerView: 1,
+                        spaceBetween: 10
+                    },
+                    640: {
+                        slidesPerView: 2,
+                        spaceBetween: 15
+                    },
+                    768: {
+                        slidesPerView: 3,
+                        spaceBetween: 15
+                    },
+                    1024: {
+                        slidesPerView: 4,
+                        spaceBetween: 20
+                    }
+                }
+            });
+        }
+
+        // Initial load
+        fetchPopularMovies();
+    </script>
+</body>
+</html>
