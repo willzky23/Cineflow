@@ -13,6 +13,12 @@
             font-family: 'Poppins', sans-serif;
             background-color: #121212;
         }
+
+        html {
+        scroll-behavior: smooth;
+        }
+
+
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -45,16 +51,16 @@
     <header class="fixed top-0 left-0 right-0 z-50 bg-[#1E1E1E]/90 backdrop-blur-sm">
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
-                <a href="/" class="flex items-center" id="homeLink">
+                <a href="landingpage.html" class="flex items-center" id="homeLink">
                     <span class="text-[#E0E0E0] font-bold text-2xl">Cine<span class="text-[#0466C8]">flow</span></span>
                 </a>
                 
                 <nav class="hidden md:block">
                     <ul class="flex space-x-8">
-                        <li><a href="/" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Início</a></li>
+                        <li><a href="home.html" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Início</a></li>
                         <li><a href="#filmes" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Filmes</a></li>
                         <li><a href="search.html" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Busca</a></li>
-                        <li><a href="#lancamentos" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Lançamentos</a></li>
+                        <li><a href="populares.html" class="text-[#E0E0E0] hover:text-[#0466C8] transition-colors font-medium">Lançamentos</a></li>
                     </ul>
                 </nav>
             </div>
@@ -66,7 +72,7 @@
 
     <!-- Popular Movies Carousel -->
     <div class="container mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold text-[#E0E0E0] mb-8">Filmes Populares</h2>
+        <h2 id="filmes" class="text-3xl font-bold text-[#E0E0E0] mb-8">Filmes Populares</h2>
         <div class="swiper popularMovies">
             <div class="swiper-wrapper" id="movieCarousel"></div>
             <div class="swiper-pagination"></div>
