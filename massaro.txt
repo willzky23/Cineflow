@@ -1,0 +1,120 @@
+# COMO RODAR O PROJETO CINEFLOW E OS TESTES CYPRESS
+
+Este guia detalha os passos para configurar e executar o projeto CineFlow, incluindo seus testes de ponta a ponta (E2E) com Cypress, em qualquer máquina.
+
+---
+
+## PRÉ-REQUISITOS
+
+Certifique-se de que os seguintes softwares estão instalados no seu computador:
+
+1.  **Node.js e npm (Node Package Manager):** Você pode baixá-los do site oficial: https://nodejs.org/
+    * Após a instalação, verifique se estão configurados corretamente executando no terminal:
+        `node -v`
+        `npm -v`
+
+2.  **Git:** Para clonar o repositório do projeto. Você pode baixá-lo aqui: https://git-scm.com/downloads
+    * Verifique a instalação com: `git --version`
+
+---
+
+## PASSO A PASSO
+
+Siga estes passos na ordem para configurar e rodar o projeto.
+
+### PASSO 1: Clonar o Repositório do Projeto
+
+Abra o terminal (ou Prompt de Comando/PowerShell no Windows, Terminal no macOS/Linux) e execute o comando `git clone` para baixar o código-fonte do CineFlow:
+
+```bash
+git clone [https://github.com/Eduarrda7444/Cineflow.git](https://github.com/Eduarrda7444/Cineflow.git)
+PASSO 2: Navegar para o Diretório do Projeto
+Após clonar, entre na pasta do projeto recém-baixada:
+
+Bash
+
+cd Cineflow
+PASSO 3: Instalar as Dependências do Projeto
+Dentro do diretório Cineflow, instale todas as dependências listadas no package.json. Este processo pode levar alguns minutos.
+
+Bash
+
+npm install
+OBSERVAÇÃO: Se você encontrar erros durante esta etapa (como ETARGET ou problemas de resolução), pode tentar um "limpa e instala" mais rigoroso:
+Bash
+
+npm cache clean --force
+rm -rf node_modules
+rm package-lock.json # Se der "arquivo ou diretório inexistente", ignore.
+npm install
+PASSO 4: Instalar o Live Server
+Para que o Cypress possa acessar seu aplicativo CineFlow (que é um projeto front-end estático), você precisa de um servidor web local. O live-server é uma excelente opção.
+
+Instale-o globalmente para poder usá-lo facilmente em qualquer diretório:
+
+Bash
+
+npm install -g live-server
+PASSO 5: Configurar o Cypress baseUrl
+Antes de rodar os testes, o Cypress precisa saber onde encontrar seu aplicativo.
+
+Abra o arquivo cypress.config.js na raiz do seu projeto CineFlow em um editor de texto (como VS Code).
+
+Localize a seção e2e e, dentro dela, a propriedade baseUrl.
+
+Certifique-se de que o baseUrl esteja definido para a porta padrão do live-server (8080):
+
+JavaScript
+
+// cypress.config.js
+const { defineConfig } = require('cypress');
+
+module.exports = defineConfig({
+  e2e: {
+    // Esta é a URL onde o live-server irá servir seu projeto
+    baseUrl: '[http://127.0.0.1:8080](http://127.0.0.1:8080)', // <--- Garanta que esta linha esteja assim
+    setupNodeEvents(on, config) {
+      // implement node event listeners here
+    },
+    specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
+  },
+});
+PASSO 6: Rodar o Aplicativo (Servidor Local)
+Agora, você precisa iniciar o servidor local que serve os arquivos do seu projeto.
+
+Abra um NOVO TERMINAL.
+
+Navegue para o diretório raiz do seu projeto CineFlow:
+
+Bash
+
+cd ~/projetos/Cineflow
+(Ou cd Cineflow se você estiver em um nível acima).
+
+Inicie o live-server:
+
+Bash
+
+live-server
+O live-server abrirá automaticamente seu navegador padrão e carregará o projeto (provavelmente em http://127.0.0.1:8080). MANTENHA ESTE TERMINAL ABERTO E O LIVE-SERVER RODANDO ENQUANTO VOCÊ EXECUTAR OS TESTES CYPRESS.
+
+PASSO 7: Rodar os Testes Cypress
+Com o live-server ativo no primeiro terminal, abra um TERCEIRO TERMINAL e execute o Cypress Test Runner:
+
+Navegue para o diretório raiz do seu projeto CineFlow:
+
+Bash
+
+cd ~/projetos/Cineflow
+Abra o Cypress:
+
+Bash
+
+npx cypress open
+Uma nova janela do Chrome (a interface do Cypress Test Runner) será aberta.
+
+Na interface do Cypress, clique na aba "E2E Tests" (Testes E2E).
+
+Você verá uma lista de arquivos de teste. Localize e clique no arquivo home_page.cy.js (ou qualquer outro arquivo de teste que você tenha criado).
+
+O Cypress abrirá uma nova janela do navegador onde seus testes serão executados passo a passo, mostrando o aplicativo e o log de comandos.
